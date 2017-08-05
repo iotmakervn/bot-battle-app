@@ -14,12 +14,12 @@ export default class HomePage extends React.Component {
     super(props);
     this.state = {
       devices: [],
-      isLoading: false,
-      services: [],
-      characteristics: []
+      service: [],
+      characteristic: []
     }
     this.manager = new BleManager();
     this._scan = this._scan.bind(this);
+    this._write = this._write.bind(this)
   }
 
   componentWillMount(){
@@ -40,51 +40,81 @@ export default class HomePage extends React.Component {
   }
 
   _scan(){
-    var tempDevices = [];
-    var idCompare = '';
+    var {devices}= this.state;
+    if (this.state.devices.length != 0){
+      this.setState({devices: []})
+    }
+
     this.manager.startDeviceScan(null,null, (error, device) => {
       if (error){
         return
       }
-      if(idCompare != device.id){
-        tempDevices.unshift({name:device.name,
-                             id: device.id
-                            })
-        idCompare = device.id
+      if(device.name != null){
+        devices.unshift({
+          name: device.name,
+          id: device.id,
+          rssi: device.rssi,
+          isConnectable: device.isConnectable,
+        })
       }
-      
-      this.setState({devices: tempDevices})
+      this.setState({devices})
     })
   }
 
-  _connect(id){
-    
-    this.manager.connectToDevice(id)
-    // var isConnected = this.manager.isDeviceConnected(id);
-    // if( isConnected === true ){
-      this.props.navigation.navigate('ControlScreen', {services: this.state.services})
-    //}
+  _connect(selectedID){
+    var {service,characteristic, devices} = this.state
+    var name = ''
+    this.manager.stopDeviceScan()
+    this.manager.connectToDevice(selectedID)
+      .then(function(device){
+        return device.discoverAllServicesAndCharacteristics()
+      })
+      .then((device) => {
+        // servicesMap = this.setupServices(device)
+        // console.log(servicesMap)
+        // return
+        name = device.name
+        device.services()
+          .then((services)=>{
+            service = services
+            this.setState({service})
+            console.log(service[2])
+            return device.characteristicsForService(this.state.service[2].uuid)
+        })
+        .then((characteristics) => {
+          characteristic = characteristics
+          console.log(characteristic[0])
+          this.setState({characteristic})
+          return this.props.navigation.navigate('JoyStick',{name: name})
+        })
+      })
   }
 
-  renderFlatListItem(item) {
-    return (
+  _write(){
+    var {devices, service, characteristic} = this.state
+    this.manager.writeCharacteristicWithoutResponseForDevice(devices[0].id,service[2].uuid,characteristic[0].uuid,'AQ==')
+  }
+
+  keyExtractor = (item, index) => [item.name,item.id]
+
+  renderFlatListItem(item){
+    return(
       <View style ={styles.deviceList}>
         <View style ={{margin: 5}}>
           <Text style = {{fontSize:20}}>{item.name}</Text>
           <Text style = {{fontSize:13}}>{item.id}</Text>
         </View>
         <View style ={{width:85, marginTop: 7, marginRight: 5}}>
-           <Button style={{backgroundColor: 'orange'}} textStyle={{fontSize: 18}} /*isLoading= {this.state.isLoading}*/ onPress = {this._connect.bind(this, item.id)}> 
+           <Button style={{backgroundColor: 'orange'}} textStyle={{fontSize: 18}} onPress = {this._connect.bind(this,item.id)}> 
             Connect
           </Button>
         </View>
       </View>
-	   )
+	  )
   }
 
-  render() {
-      
-    return (
+  render(){
+    return(
       
       <View>
           <View style = {styles.container}>
@@ -95,8 +125,9 @@ export default class HomePage extends React.Component {
           </View>
           <View style = {{flexDirection:'row', justifyContent:'space-between'}}> 
             <FlatList
-              key={"flatlistexample"}
               data={this.state.devices}
+              extraData={this.state}
+              keyExtractor={this.keyExtractor}
               renderItem={({item}) => this.renderFlatListItem(item)}
             />
           </View>
