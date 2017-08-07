@@ -4,6 +4,8 @@ import Orientation from 'react-native-orientation';
 import Button from 'apsl-react-native-button';
 import JoyStick_Background from '../images/joystick_background.png';
 import JoyStick_Thumb from '../images/joystick_thumb.png';
+import {BleManager} from 'react-native-ble-plx';
+
 
 export default class ControlPage extends React.Component {
 
@@ -12,24 +14,14 @@ export default class ControlPage extends React.Component {
   };
 
   constructor(props){
-    super(props);    
+    super(props)
+    var data =''    
     this.state = {
-      marginLeft : new Animated.Value(48),
-      marginTop : new Animated.Value(48),
-      text: false
     }
-    
+    this.manager = new BleManager()
   }
   componentWillMount(){
     Orientation.lockToLandscape();
-  }
-
-  _disconnect(){
-
-  }
-
-  componentWillReceiveProps(nextProps) {
-    
   }
 
   render(){
@@ -38,14 +30,19 @@ export default class ControlPage extends React.Component {
       <View style = {{flexDirection:'column'}}>
           <StatusBar hidden={true} />
         <View style = {styles.container}>
-             <Text style ={{fontSize:40}}> </Text> 
+             <Text style ={{fontSize:40}}>{params.info[0].deviceID}</Text> 
             <View style ={{width:100, marginTop: 7, marginRight: 5}}>
-              <Button onPress ={this._disconnect()}>Disconnect</Button>
+              <Button 
+                onPress = {()=>{ this.manager.cancelDeviceConnection(params.info[0].deviceID), Orientation.unlockAllOrientations(), Orientation.lockToPortrait(),this.props.navigation.goBack()}}
+              >
+                Disconnect
+              </Button>
+              <Text>{this.props.abc}</Text>
             </View>
         </View>
         <View style = {{flexDirection: 'row'}}>
-          <JoyStick/>
-          <ControlSkills/>
+          <JoyStick info = {params.info[0]}/>
+          <ControlSkills info = {params.info[0]}/>
         </View>  
       </View>
     );
@@ -66,14 +63,21 @@ class JoyStick extends Component {
       y: null,
       position: new Animated.ValueXY()
     }
+    this.manager = new BleManager()
+  }
+
+  sendData(dat){
+    var {info} = this.props
+    this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
+    return console.log(info)
   }
 
   _position(_x,_y){
     const {position} = this.state
     if(Math.abs(_x)>86 || Math.abs(_y)>86 ){
       var cornerY = Math.atan(_x/_y)
-      var x = Math.sin(cornerY)*85
-      var y = Math.cos(cornerY)*85
+      x = Math.sin(cornerY)*85
+      y = Math.cos(cornerY)*85
       if(_y<0){
         x = -x
         y = -y
@@ -81,17 +85,31 @@ class JoyStick extends Component {
       position.setValue({x: x, y: y})
     } else {
       position.setValue({x: _x, y: _y})
-    }
+    }   
   }
+
   _onPanResponderMove(event, gestureState){
     const {position} = this.state
     // var x = gestureState.dx, y = gestureState.dy
     this._position(gestureState.dx, gestureState.dy)
     // position.setValue({x: x, y: y})
+    console.log(position.x._value, position.y._value)
+    if((-60)<position.x._value&& position.x._value<(60)&& position.y._value<(0)){
+      this.sendData('AQ==')
+    }
+    if((-60)<position.x._value&& position.x._value<(60)&& position.y._value>(0)){
+      this.sendData('Aw==')
+    }
+    if((-60)<position.y._value&& position.y._value<(60)&& position.x._value>(0)){
+      this.sendData('BA==')
+    }
+    if((-60)<position.y._value&& position.y._value<(60)&& position.x._value<(0)){
+      this.sendData('Ag==')
+    }
   }
-
   _onPanResponderRelease(event, gestureState){
     const {position} = this.state
+    this.sendData('BQ==')
     position.setValue(gestureState.stateID)
   }
 
@@ -116,26 +134,33 @@ class JoyStick extends Component {
 class ControlSkills extends Component{
   constructor(props){
     super(props)
+    var data  = ''
     this.state = {
-      data: ''
+      
     }
+    this.manager = new BleManager()
+  }
+  sendData(dat){
+    var {info} = this.props
+    this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
+    console.log(info)
   }
   render(){
     return(
-      <View style = {{width: 200, height: 180, flexDirection:'column',backgroundColor: 'yellow', marginTop:90, marginLeft: 150}}>
+      <View style = {{flexDirection:'column', marginTop:30, marginLeft: 150}}>
         <View style = {{flexDirection:'row', justifyContent:'space-between'}}>
-          <Circle onPress = {() => this.setState({data: 'AQ=='})}>
+          <Circle onPress = {()=> {this.sendData('Bg==')}}>
             <Text style = {{fontSize:30}}>Q</Text>
           </Circle>
-          <Circle>
+          <Circle onPress = {()=> {this.sendData('Bw==')}}>
             <Text style = {{fontSize:25}}>W</Text>
           </Circle>
         </View>
         <View style = {{flexDirection:'row', justifyContent:'space-between'}}>
-          <Circle>
+          <Circle onPress = {()=> {this.sendData('CA==')}}>
             <Text style = {{fontSize:25}}>E</Text>
           </Circle>
-          <Circle>
+          <Circle onPress = {()=> {this.sendData('CQ==')}}>
             <Text style = {{fontSize:25}}>R</Text>
           </Circle>
         </View>
@@ -152,13 +177,11 @@ var Circle = ({children, onPress}) => (
     </TouchableOpacity>
 )
 
-var data = ['AQ==','Ag==','Aw==','BA==','BQ==','BQ==']
-
 const styles = StyleSheet.create({
   circle: {
-    width: 50,
-    height: 50,
-    borderRadius: 50/2,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: 'red',
     alignItems: 'center',
     justifyContent:'center',

@@ -7,9 +7,9 @@ import ControlPage from '../Components/ControlPage.js';
 import JoyStick from '../Components/ControlPagebyJoyStick.js';
 
 export const HomeStack = StackNavigator({
-    // HomesScreen:{
-    //     screen: HomePage
-    // },
+    HomesScreen:{
+        screen: HomePage
+    },
     // ControlScreen:{
     //     screen: ControlPage
     // },

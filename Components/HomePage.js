@@ -42,9 +42,9 @@ export default class HomePage extends React.Component {
   _scan(){
     var {devices}= this.state;
     if (this.state.devices.length != 0){
-      this.setState({devices: []})
+      this.setState({devices:[]})
     }
-
+    
     this.manager.startDeviceScan(null,null, (error, device) => {
       if (error){
         return
@@ -54,7 +54,6 @@ export default class HomePage extends React.Component {
           name: device.name,
           id: device.id,
           rssi: device.rssi,
-          isConnectable: device.isConnectable,
         })
       }
       this.setState({devices})
@@ -63,17 +62,13 @@ export default class HomePage extends React.Component {
 
   _connect(selectedID){
     var {service,characteristic, devices} = this.state
-    var name = ''
+    var info = []
     this.manager.stopDeviceScan()
     this.manager.connectToDevice(selectedID)
       .then(function(device){
         return device.discoverAllServicesAndCharacteristics()
       })
       .then((device) => {
-        // servicesMap = this.setupServices(device)
-        // console.log(servicesMap)
-        // return
-        name = device.name
         device.services()
           .then((services)=>{
             service = services
@@ -85,7 +80,7 @@ export default class HomePage extends React.Component {
           characteristic = characteristics
           console.log(characteristic[0])
           this.setState({characteristic})
-          return this.props.navigation.navigate('JoyStick',{name: name})
+          return this.props.navigation.navigate('JoyStick',{info: this.state.characteristic})
         })
       })
   }
