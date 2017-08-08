@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Image, Animated, PanResponder } from 'react-native';
+import {StyleSheet, Text, View, StatusBar, TouchableOpacity, Image, Animated, PanResponder, TouchableHighlight} from 'react-native';
 import Orientation from 'react-native-orientation';
 import Button from 'apsl-react-native-button';
 import JoyStick_Background from '../images/joystick_background.png';
@@ -30,19 +30,23 @@ export default class ControlPage extends React.Component {
       <View style = {{flexDirection:'column'}}>
           <StatusBar hidden={true} />
         <View style = {styles.container}>
-             <Text style ={{fontSize:40}}>{params.info[0].deviceID}</Text> 
-            <View style ={{width:100, marginTop: 7, marginRight: 5}}>
-              <Button 
-                onPress = {()=>{ this.manager.cancelDeviceConnection(params.info[0].deviceID), Orientation.unlockAllOrientations(), Orientation.lockToPortrait(),this.props.navigation.goBack()}}
-              >
-                Disconnect
-              </Button>
-              <Text>{this.props.abc}</Text>
-            </View>
+          <View>
+            <Image
+              style={{width: 100, height: 50, margin: 5}}
+              source={require('../images/iot_maker_logo.png')}
+            />
+          </View>
+          <Text style ={{fontSize:40, color: '#DF7401',fontWeight:'bold'}}>Bot-Control</Text> 
+          <TouchableHighlight 
+            style = {styles.button} 
+            onPress = {()=>{ this.manager.cancelDeviceConnection(params.info[0].deviceID), Orientation.unlockAllOrientations(), Orientation.lockToPortrait(),this.props.navigation.goBack()}}
+          >
+            <Text>Disconnect</Text>
+          </TouchableHighlight>
         </View>
         <View style = {{flexDirection: 'row'}}>
-          <JoyStick info = {params.info[0]}/>
-          <ControlSkills info = {params.info[0]}/>
+          <JoyStick info = {params.info}/>
+          <ControlSkills info = {params.info}/>
         </View>  
       </View>
     );
@@ -69,7 +73,6 @@ class JoyStick extends Component {
   sendData(dat){
     var {info} = this.props
     this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
-    return console.log(info)
   }
 
   _position(_x,_y){
@@ -90,10 +93,7 @@ class JoyStick extends Component {
 
   _onPanResponderMove(event, gestureState){
     const {position} = this.state
-    // var x = gestureState.dx, y = gestureState.dy
     this._position(gestureState.dx, gestureState.dy)
-    // position.setValue({x: x, y: y})
-    console.log(position.x._value, position.y._value)
     if((-60)<position.x._value&& position.x._value<(60)&& position.y._value<(0)){
       this.sendData('AQ==')
     }
@@ -143,25 +143,24 @@ class ControlSkills extends Component{
   sendData(dat){
     var {info} = this.props
     this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
-    console.log(info)
   }
   render(){
     return(
-      <View style = {{flexDirection:'column', marginTop:30, marginLeft: 150}}>
-        <View style = {{flexDirection:'row', justifyContent:'space-between'}}>
-          <Circle onPress = {()=> {this.sendData('Bg==')}}>
-            <Text style = {{fontSize:30}}>Q</Text>
+      <View style = {{flexDirection:'column', marginTop:45, marginLeft: 150}}>
+         <View style = {{flexDirection:'row'}}> 
+          <Circle onPress = {()=> {this.sendData('Fg==')}} style = {{marginLeft: 53,marginTop:48, marginRight: 20}}>
+            <Text style = {styles.textiInCircle}>W</Text>
           </Circle>
-          <Circle onPress = {()=> {this.sendData('Bw==')}}>
-            <Text style = {{fontSize:25}}>W</Text>
+          <Circle onPress = {()=> {this.sendData('Eg==')}} style = {{marginTop: 10}}>
+            <Text style = {styles.textiInCircle}>E</Text>
           </Circle>
         </View>
-        <View style = {{flexDirection:'row', justifyContent:'space-between'}}>
-          <Circle onPress = {()=> {this.sendData('CA==')}}>
-            <Text style = {{fontSize:25}}>E</Text>
+        <View style = {{flexDirection:'row'}}>
+          <Circle onPress = {()=> {this.sendData('Bg==')}} style = {{marginLeft:10 ,marginRight:60, marginTop: 12}}>
+            <Text style = {styles.textiInCircle}>Q</Text>
           </Circle>
-          <Circle onPress = {()=> {this.sendData('CQ==')}}>
-            <Text style = {{fontSize:25}}>R</Text>
+          <Circle onPress = {()=> {this.sendData('CQ==')}} style = {{marginTop: 12}}>
+            <Text style = {styles.textiInCircle}>R</Text>
           </Circle>
         </View>
       </View>
@@ -169,8 +168,8 @@ class ControlSkills extends Component{
   }
 }
 
-var Circle = ({children, onPress}) => (
-    <TouchableOpacity onPress = {onPress}>
+var Circle = ({children, onPress, style}) => (
+    <TouchableOpacity onPressIn = {onPress} style ={style}>
       <View style ={styles.circle}>
         <Text>{children}</Text>
       </View>
@@ -179,13 +178,34 @@ var Circle = ({children, onPress}) => (
 
 const styles = StyleSheet.create({
   circle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'red',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'lightgoldenrodyellow',
     alignItems: 'center',
     justifyContent:'center',
-    margin: 20
   },
-  container:  {flexDirection: 'row', borderBottomWidth: 3, justifyContent: 'space-between', alignItems: 'center'},
+  container:  {
+    flexDirection: 'row', 
+    borderBottomWidth: 3, 
+    justifyContent: 'space-between', 
+    alignItems: 'center'
+  },
+  button: {
+    borderRadius: 5,
+    backgroundColor: 'orange',
+    padding: 10,
+    margin: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+    height: 45,
+    borderWidth:1,
+    borderColor:'#FFFF00'
+  },
+  textiInCircle: {
+    fontSize:35, 
+    fontWeight:'bold'
+  }
+
 })
