@@ -10,12 +10,12 @@ import {BleManager} from 'react-native-ble-plx';
 export default class ControlPage extends React.Component {
 
   static navigationOptions = {
-    header: null,
+    header: null
   };
 
   constructor(props){
     super(props)
-    var data =''    
+    var data =''   
     this.state = {
     }
     this.manager = new BleManager()
@@ -24,8 +24,17 @@ export default class ControlPage extends React.Component {
     Orientation.lockToLandscape();
   }
 
+  _disconnect(deviceID){
+    this.manager.cancelDeviceConnection(deviceID)
+    Orientation.lockToPortrait()
+    this.props.navigation.goBack()
+  }
+
   render(){
     const {params} = this.props.navigation.state
+    // this.manager.onDeviceDisconnected(params.info.deviceID,(error,device)=>{
+    //   this._disconnect(device.id)
+    // })
     return(
       <View style = {{flexDirection:'column'}}>
           <StatusBar hidden={true} />
@@ -36,10 +45,10 @@ export default class ControlPage extends React.Component {
               source={require('../images/iot_maker_logo.png')}
             />
           </View>
-          <Text style ={{fontSize:40, color: '#DF7401',fontWeight:'bold'}}>Bot-Control</Text> 
+          <Text style ={{fontSize:40, color: '#DF7401',fontWeight:'bold'}}>{params.name}</Text> 
           <TouchableHighlight 
             style = {styles.button} 
-            onPress = {()=>{ this.manager.cancelDeviceConnection(params.info[0].deviceID), Orientation.unlockAllOrientations(), Orientation.lockToPortrait(),this.props.navigation.goBack()}}
+            onPress = {this._disconnect.bind(this,params.info.deviceID)}
           >
             <Text>Disconnect</Text>
           </TouchableHighlight>
@@ -77,7 +86,7 @@ class JoyStick extends Component {
 
   _position(_x,_y){
     const {position} = this.state
-    if(Math.abs(_x)>86 || Math.abs(_y)>86 ){
+    if(Math.abs(_x)>85 || Math.abs(_y)>85 ){
       var cornerY = Math.atan(_x/_y)
       x = Math.sin(cornerY)*85
       y = Math.cos(cornerY)*85
@@ -93,19 +102,29 @@ class JoyStick extends Component {
 
   _onPanResponderMove(event, gestureState){
     const {position} = this.state
+    const {touches} = event.nativeEvent
+    for(var i in touches){
+      if (i>0){
+        console.log(touches[i].locationX)
+        if((touches[1].locationX=1420) && (touches[1].locationXY = 590)){
+          this.sendData('CQ==')
+        }
+      }
+    }
     this._position(gestureState.dx, gestureState.dy)
-    if((-60)<position.x._value&& position.x._value<(60)&& position.y._value<(0)){
+    if((-60)<=position.x._value&& position.x._value<=(60)&& position.y._value<(0)){
       this.sendData('AQ==')
     }
-    if((-60)<position.x._value&& position.x._value<(60)&& position.y._value>(0)){
+    if((-60)<=position.x._value&& position.x._value<=(60)&& position.y._value>(0)){
       this.sendData('Aw==')
     }
-    if((-60)<position.y._value&& position.y._value<(60)&& position.x._value>(0)){
+    if((-60)<=position.y._value&& position.y._value<=(60)&& position.x._value>(0)){
       this.sendData('BA==')
     }
-    if((-60)<position.y._value&& position.y._value<(60)&& position.x._value<(0)){
+    if((-60)<=position.y._value&& position.y._value<=(60)&& position.x._value<(0)){
       this.sendData('Ag==')
     }
+    console.log(event.nativeEvent)
   }
   _onPanResponderRelease(event, gestureState){
     const {position} = this.state
@@ -136,7 +155,7 @@ class ControlSkills extends Component{
     super(props)
     var data  = ''
     this.state = {
-      
+      reverse: 'OFF'
     }
     this.manager = new BleManager()
   }
@@ -146,20 +165,34 @@ class ControlSkills extends Component{
   }
   render(){
     return(
-      <View style = {{flexDirection:'column', marginTop:45, marginLeft: 150}}>
-         <View style = {{flexDirection:'row'}}> 
-          <Circle onPress = {()=> {this.sendData('Fg==')}} style = {{marginLeft: 53,marginTop:48, marginRight: 20}}>
+      <View style = {{flexDirection:'column', marginTop:20, marginLeft: 30}}>
+        <View style = {{flexDirection:'row'}}>
+          <Rectangle onPress = {()=> {this.sendData('Eg==')}} style={{marginLeft: 30}}>
+            <Text  style = {styles.textiInRectangle}>{this.state.reverse}</Text>
+          </Rectangle>
+          <Rectangle onPress = {()=> {this.sendData('Bg==')}} style = {{marginLeft:20}}>
+            <Text style = {styles.textiInRectangle}>Q'</Text>
+          </Rectangle>
+        </View>  
+        <View style = {{flexDirection:'row'}}> 
+          <Circle onPressIn = {()=> {this.sendData('CQ==')}} 
+                  onPressOut = {()=> {this.sendData('Cw==')}}
+                  style = {{marginLeft: 180,marginTop:48, marginRight: 20}}>
             <Text style = {styles.textiInCircle}>W</Text>
           </Circle>
-          <Circle onPress = {()=> {this.sendData('Eg==')}} style = {{marginTop: 10}}>
+          <Circle onPressIn = {()=> {this.sendData('DA==')}} 
+                  onPressOut = {()=> {this.sendData('DQ==')}}
+                  style = {{marginTop: 10}}>
             <Text style = {styles.textiInCircle}>E</Text>
           </Circle>
         </View>
         <View style = {{flexDirection:'row'}}>
-          <Circle onPress = {()=> {this.sendData('Bg==')}} style = {{marginLeft:10 ,marginRight:60, marginTop: 12}}>
+          <Circle onPress = {()=> {this.sendData('Bw==')}} style = {{marginLeft:135 ,marginRight:60, marginTop: 12}}>
             <Text style = {styles.textiInCircle}>Q</Text>
           </Circle>
-          <Circle onPress = {()=> {this.sendData('CQ==')}} style = {{marginTop: 12}}>
+          <Circle onPressIn = {()=> {this.sendData('EA==')}} 
+                  onPressOut = {()=> {this.sendData('EQ==')}} 
+                  style = {{marginTop: 12}}>
             <Text style = {styles.textiInCircle}>R</Text>
           </Circle>
         </View>
@@ -168,9 +201,17 @@ class ControlSkills extends Component{
   }
 }
 
-var Circle = ({children, onPress, style}) => (
-    <TouchableOpacity onPressIn = {onPress} style ={style}>
+var Circle = ({children, onPress, style, onPressIn, onPressOut}) => (
+    <TouchableOpacity onPress = {onPress} style ={style} onPressIn ={onPressIn} onPressOut = {onPressOut}>
       <View style ={styles.circle}>
+        <Text>{children}</Text>
+      </View>
+    </TouchableOpacity>
+)
+
+var Rectangle = ({children, onPress, style}) => (
+    <TouchableOpacity onPress = {onPress} style ={style} >
+      <View style ={styles.rectangle}>
         <Text>{children}</Text>
       </View>
     </TouchableOpacity>
@@ -206,6 +247,18 @@ const styles = StyleSheet.create({
   textiInCircle: {
     fontSize:35, 
     fontWeight:'bold'
+  },
+  rectangle: {
+    borderRadius: 5,
+    backgroundColor: 'lightgoldenrodyellow',
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 60,
+    height: 50,
+  },
+  textiInRectangle: {
+    fontSize:16, 
+    fontWeight:'bold'
   }
-
 })

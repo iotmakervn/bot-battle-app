@@ -42,7 +42,6 @@ export default class HomePage extends React.Component {
     if (this.state.devices.length != 0){
       this.setState({devices:[]})
     }
-    
     this.manager.startDeviceScan(null,null, (error, device) => {
       if (error){
         return
@@ -58,31 +57,26 @@ export default class HomePage extends React.Component {
     })
   }
 
-  _connect(selectedID){
-    var {service,characteristic, devices} = this.state
+  _connect(deviceID,deviceName){
     var info = []
     var characteristicForWrite = []
     this.manager.stopDeviceScan()
-    this.manager.connectToDevice(selectedID)
+    this.manager.connectToDevice(deviceID)
       .then(function(device){
         return device.discoverAllServicesAndCharacteristics()
       })
       .then((device) => {
         device.services()
           .then((services)=>{
-            service = services
-            this.setState({service})
-            return device.characteristicsForService(this.state.service[2].uuid)
-        })
+            return device.characteristicsForService(services[2].uuid)
+          })
         .then((characteristics) => {
-          characteristic = characteristics
-          this.setState({characteristic})
-          console.log(characteristic)
-          for(var i in characteristic){
-            if(characteristic[i].isWritableWithResponse === true)
-              characteristicForWrite = characteristic[i]
+          for(var i in characteristics){
+            if(characteristics[i].isWritableWithResponse === true)
+              characteristicForWrite = characteristics[i]
           }
-          return this.props.navigation.navigate('JoyStick',{info: characteristicForWrite})
+          console.log(characteristicForWrite)
+          return this.props.navigation.navigate('JoyStick',{info: characteristicForWrite, name: deviceName})
         })
       })
   }
@@ -96,7 +90,7 @@ export default class HomePage extends React.Component {
           <Text style = {{fontSize:20}}>{item.name}</Text>
           <Text style = {{fontSize:13}}>{item.id}</Text>
         </View>
-        <TouchableHighlight onPress = {this._connect.bind(this,item.id)} style ={styles.button}>
+        <TouchableHighlight onPress = {this._connect.bind(this,item.id,item.name)} style ={styles.button}>
           <Text>Connect</Text>
         </TouchableHighlight>
       </View>
