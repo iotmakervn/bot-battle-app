@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, View, StatusBar, TouchableOpacity, Image, Animated, PanResponder, TouchableHighlight} from 'react-native';
+import {StyleSheet, Text, View, StatusBar, TouchableOpacity, Image, Animated, PanResponder, TouchableHighlight,BackHandler} from 'react-native';
 import Orientation from 'react-native-orientation';
 import Button from 'apsl-react-native-button';
 import JoyStick_Background from '../images/joystick_background.png';
@@ -19,6 +19,7 @@ export default class ControlPage extends React.Component {
     this.state = {
     }
     this.manager = new BleManager()
+    this.handleBackButton = this.handleBackButton.bind(this)
   }
   componentWillMount(){
     Orientation.lockToLandscape();
@@ -59,6 +60,17 @@ export default class ControlPage extends React.Component {
         </View>  
       </View>
     );
+  }
+  componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton() {
+    return true;
   }
 }
 
