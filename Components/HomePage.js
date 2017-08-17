@@ -12,9 +12,10 @@ export default class HomePage extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      devices: [],
+      devices: new Array(),
       service: [],
-      characteristic: []
+      characteristic: [],
+      refresh: false
     }
     this.manager = new BleManager();
     this._scan = this._scan.bind(this);
@@ -31,7 +32,6 @@ export default class HomePage extends React.Component {
       }
   } 
 
-
   componentWillUnMount(){
     this.manager.destroy()
     delete this.manager
@@ -39,21 +39,24 @@ export default class HomePage extends React.Component {
 
   _scan(){
     var {devices}= this.state;
-    if (this.state.devices.length != 0){
-      this.setState({devices:[]})
+    //this.setState({devices: [], refresh: true})
+    if(devices.length != 0){ //clear devices array
+      devices.length = 0
     }
     this.manager.startDeviceScan(null,null, (error, device) => {
       if (error){
         return
       }
       if(device.name != null){
-        devices.unshift({
+        devices.unshift ({
           name: device.name,
           id: device.id,
           rssi: device.rssi,
-        })
+      })
       }
-      this.setState({devices})
+      
+      this.setState({devices, refresh: false})
+      console.log(this.state.devices)
     })
   }
 
@@ -90,7 +93,7 @@ export default class HomePage extends React.Component {
           <Text style = {{fontSize:20}}>{item.name}</Text>
           <Text style = {{fontSize:13}}>{item.id}</Text>
         </View>
-        <TouchableHighlight onPress = {this._connect.bind(this,item.id,item.name)} style ={styles.button}>
+        <TouchableHighlight underlayColor='ivory' onPress = {this._connect.bind(this,item.id,item.name)} style ={styles.button}>
           <Text>Connect</Text>
         </TouchableHighlight>
       </View>
@@ -107,12 +110,14 @@ export default class HomePage extends React.Component {
                 source={require('../images/iot_maker_logo.png')}
               />
             </View>
-            <TouchableHighlight style = {styles.button} onPress = {this._scan.bind(this)}>
+            <TouchableHighlight underlayColor='ivory' style = {styles.button} onPress = {this._scan.bind(this)}>
               <Text>Scan</Text>
             </TouchableHighlight>
           </View>
           <View style = {{flexDirection:'row', justifyContent:'space-between'}}> 
             <FlatList
+              refreshing = {this.state.refresh}
+              onRefresh = {()=>{this.refresh()}}
               data={this.state.devices}
               extraData={this.state}
               keyExtractor={this.keyExtractor}
@@ -123,6 +128,9 @@ export default class HomePage extends React.Component {
     ); 
   }
   
+  refresh(){
+    this._scan()
+  }
   componentDidMount(){
     if (Platform.OS === 'android' && Platform.Version >= 23) {
         PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {

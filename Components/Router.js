@@ -10,9 +10,6 @@ export const HomeStack = StackNavigator({
     HomesScreen:{
         screen: HomePage
     },
-    // ControlScreen:{
-    //     screen: ControlPage
-    // },
     JoyStick:{
         screen: JoyStick
     }
