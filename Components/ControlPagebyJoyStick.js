@@ -16,7 +16,7 @@ export default class ControlPage extends React.Component {
     super(props)
     var data =''   
     this.state = {
-      status: 'BQ=='
+      status: 'BQ==',
     }
     this.manager = new BleManager()
     this.handleBackButton = this.handleBackButton.bind(this)
@@ -26,7 +26,7 @@ export default class ControlPage extends React.Component {
     this.manager.cancelDeviceConnection(deviceID)
     this.props.navigation.goBack()
   }
-
+  
   render(){
     const {params} = this.props.navigation.state
     // this.manager.onDeviceDisconnected(params.info.deviceID,(error,device)=>{
@@ -97,7 +97,6 @@ class JoyStick extends Component {
     if(dat != status){
       this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
       this.setState({status: dat})
-      //console.log(status,dat)
     }
   }
 
@@ -115,7 +114,6 @@ class JoyStick extends Component {
     } else {
       position.setValue({x: _x, y: _y})
     }
-    console.log(_x,_y, cornerY)
     if(_y===0){
       if(_x>0){
         this.sendData('BA==')
@@ -171,7 +169,9 @@ class JoyStick extends Component {
     // if((-60)<position.y._value&& position.y._value<(60)&& position.x._value<(0)){
     //   this.sendData('Ag==')
     // }
+    console.log(event.touchHistory)
   }
+  
   _onPanResponderRelease(event, gestureState){
     const {position} = this.state
     const {touches} = event.nativeEvent
@@ -187,7 +187,7 @@ class JoyStick extends Component {
           >
             <View {...this.panResponder.panHandlers}>
                 <Animated.Image source = {JoyStick_Thumb}
-                                style = {this.state.position.getLayout()}
+                                style = {[this.state.position.getLayout(), styles.jumstickThumb]}
                 />  
             </View>
           </Image>
@@ -209,9 +209,6 @@ class ControlSkills extends Component{
   sendData(dat){
     var {info} = this.props
     this.manager.writeCharacteristicWithoutResponseForDevice(info.deviceID, info.serviceUUID,info.uuid, dat)
-      .then((Characteristic)=>{
-        console.log(Characteristic)
-      })
   }
   render(){
     return(
@@ -322,5 +319,9 @@ const styles = StyleSheet.create({
   textInRectangle: {
     fontSize:18, 
     fontWeight:'bold'
+  },
+  jumstickThumb: {
+    width: 120,
+    height: 120
   }
 })

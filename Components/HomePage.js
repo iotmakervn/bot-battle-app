@@ -15,7 +15,9 @@ export default class HomePage extends React.Component {
       devices: new Array(),
       service: [],
       characteristic: [],
-      refresh: false
+      refresh: false,
+      connectButton: 'Connect',
+      pressed: false
     }
     this.manager = new BleManager();
     this._scan = this._scan.bind(this);
@@ -42,6 +44,10 @@ export default class HomePage extends React.Component {
     //this.setState({devices: [], refresh: true})
     if(devices.length != 0){ //clear devices array
       devices.length = 0
+      this.setState({devices})
+    }
+    if(this.state.pressed){
+      this.setState({pressed:false})
     }
     this.manager.startDeviceScan(null,null, (error, device) => {
       if (error){
@@ -54,7 +60,6 @@ export default class HomePage extends React.Component {
           rssi: device.rssi,
       })
       }
-      
       this.setState({devices, refresh: false})
       console.log(this.state.devices)
     })
@@ -65,7 +70,7 @@ export default class HomePage extends React.Component {
     var characteristicForWrite = []
     this.manager.stopDeviceScan()
     this.manager.connectToDevice(deviceID)
-      .then(function(device){
+      .then((device) => {
         return device.discoverAllServicesAndCharacteristics()
       })
       .then((device) => {
@@ -82,6 +87,7 @@ export default class HomePage extends React.Component {
           return this.props.navigation.navigate('JoyStick',{info: characteristicForWrite, name: deviceName})
         })
       })
+      this.setState({pressed: true})
   }
 
   keyExtractor = (item, index) => [item.name,item.id]
@@ -93,8 +99,8 @@ export default class HomePage extends React.Component {
           <Text style = {{fontSize:20}}>{item.name}</Text>
           <Text style = {{fontSize:13}}>{item.id}</Text>
         </View>
-        <TouchableHighlight underlayColor='ivory' onPress = {this._connect.bind(this,item.id,item.name)} style ={styles.button}>
-          <Text>Connect</Text>
+        <TouchableHighlight underlayColor='ivory' onPress = {this._connect.bind(this,item.id,item.name)} style ={styles.button}  disabled = {this.state.pressed}>
+          <Text>{this.state.connectButton}</Text>
         </TouchableHighlight>
       </View>
 	  )
