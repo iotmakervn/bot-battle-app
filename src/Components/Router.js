@@ -3,13 +3,13 @@ import { View, Text } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 import HomePage from '../Components/HomePage.js';
-import JoyStick from '../Components/ControlPagebyJoyStick.js';
+import ControlPage from '../Components/ControlPage.js';
 
 export const HomeStack = StackNavigator({
-    HomesScreen:{
+    HomePage:{
         screen: HomePage
     },
-    JoyStick:{
-        screen: JoyStick
+    ControlPage:{
+        screen: ControlPage
     }
 })

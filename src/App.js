@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
-import { HomeStack } from './Components/Router.js';
+import {HomeStack} from './Components/Router';
 
 export default class App extends Component {
   render(){

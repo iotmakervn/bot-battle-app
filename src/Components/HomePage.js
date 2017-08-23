@@ -84,7 +84,7 @@ export default class HomePage extends React.Component {
               characteristicForWrite = characteristics[i]
           }
           console.log(characteristicForWrite)
-          return this.props.navigation.navigate('JoyStick',{info: characteristicForWrite, name: deviceName})
+          return this.props.navigation.navigate('ControlPage',{info: characteristicForWrite, name: deviceName})
         })
       })
       this.setState({pressed: true})
