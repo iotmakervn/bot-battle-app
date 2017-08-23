@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
 import Reverse from '../images/reverse-icon-9590.png';
@@ -66,7 +67,7 @@ export default class Skills extends React.Component{
 }
 
 Skills.propType = {
-  info: React.PropTypes.array
+  info: PropTypes.array
 }
 
 

@@ -1,5 +1,6 @@
 
-import React, { Component } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {StyleSheet, PanResponder, Animated, View, Text, Image} from 'react-native';
 import JoyStick_Background from '../images/joystick_background.png';
 import JoyStick_Thumb from '../images/joystick_thumb.png';
@@ -184,7 +185,7 @@ export default class  JoyStick extends React.Component {
 }
 
 JoyStick.propType = {
-  info: React.PropTypes.array
+  info: PropTypes.array
 }
 
 const styles = StyleSheet.create({
