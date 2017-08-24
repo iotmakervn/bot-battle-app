@@ -6,10 +6,10 @@ import HomePage from '../Components/HomePage.js';
 import ControlPage from '../Components/ControlPage.js';
 
 export const HomeStack = StackNavigator({
-    HomePage:{
+    HomePage: {
         screen: HomePage
     },
-    ControlPage:{
+    ControlPage: {
         screen: ControlPage
-    }
+    },
 })
