@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, StatusBar, Image, TouchableHighlight, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, Image, TouchableHighlight, BackHandler, Platform } from 'react-native';
 import Orientation from 'react-native-orientation';
 import { BleManager } from 'react-native-ble-plx';
 import JoyStick from './JoyStick';
@@ -17,17 +17,93 @@ export default class ControlPage extends React.Component {
     var data = ''
     const { params } = this.props.navigation.state
     this.state = {
-      params: params
+      params: params,
+      btnLabel: 'Connecting..',
+      enabled: false
     }
+    console.log(this.props.navigation.state)
     this.manager = this.props.screenProps.ble
     this.onJoystickBtnClick = this.onJoystickBtnClick.bind(this)
     this.onJoystickPan = this.onJoystickPan.bind(this)
-    this.left_speed = 0;
-    this.right_speed = 0;
-    this.send_done = true;
-  }
+    this.left_speed = 0
+    this.right_speed = 0
+    this.send_done = true
+    this.info = null
+    this.disconnectEvent = null
+    this.intervalConnect = null
 
+  }
+  componentDidMount() {
+    let self = this;
+    console.log(this.props.navigation.state, this.state.params)
+    self._connect(this.state.params.id, this.state.params.name)
+    
+  }
+  _reconnect(deviceID, deviceName) {
+    console.log('reconnecting...', deviceID, deviceName)
+    var self = this
+    self.setState({btnLabel: 'Connecting..', enabled: false})
+    self.intervalConnect = setInterval(() => {
+      self._connect(deviceID, deviceName)
+    }, 1000);
+  }
+  _connect(deviceID, deviceName) {
+    var self = this
+    this.manager.stopDeviceScan()
+    console.log(deviceID, deviceName)
+    this.manager.connectToDevice(deviceID)
+      .then((device) => {
+        console.log(device)
+        if(self.intervalConnect) {
+          clearInterval(self.intervalConnect)
+          self.intervalConnect = null
+        }
+        return device.discoverAllServicesAndCharacteristics()
+      })
+      .then((device) => {
+        device.services()
+          .then((services) => {
+            console.log(services)
+            let service_idx = 2;
+            if (Platform.OS == 'ios')
+              service_idx = 0;
+            return device.characteristicsForService(services[service_idx].uuid)
+          })
+          .then((characteristics) => {
+            console.log(characteristics)
+            for (var i in characteristics) {
+              if (characteristics[i].isWritableWithResponse === true) {
+
+                self.info = characteristics[i]
+                self.setState({btnLabel: 'Disconnect', enabled: true})
+                if(self.disconnectEvent) {
+                  self.disconnectEvent.remove();
+                }
+                self.disconnectEvent = self.manager.onDeviceDisconnected(deviceID, (err, device) => {
+                  self.manager
+                    .cancelDeviceConnection(device.id)
+                    .then((err) => {
+                      self._reconnect(deviceID, deviceName)
+                    })
+                    .catch((e) => {
+                      console.log(e);
+                      self._reconnect(deviceID, deviceName)
+                    })
+                })
+                return
+
+              }
+            }
+            
+          })
+      })
+  }
   _disconnect(deviceID) {
+    if(this.disconnectEvent) {
+      
+      this.disconnectEvent.remove()
+      this.disconnectEvent = null
+    }
     this.manager
       .cancelDeviceConnection(deviceID)
       .then((err) => {
@@ -35,6 +111,7 @@ export default class ControlPage extends React.Component {
       })
       .catch((e) => {
         console.log(e);
+        this.props.navigation.navigate('HomePage', {})
       })
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton)
   }
@@ -121,7 +198,9 @@ export default class ControlPage extends React.Component {
   }
 
   write(data, force) {
-    let info = this.state.params.info;
+    if(!this.state.enabled)
+      return;
+    let info = this.info;
     let self = this;
     if (!force && this.send_done == false) {
       return;
@@ -151,10 +230,10 @@ export default class ControlPage extends React.Component {
           </View>
           <Text style={{ fontSize: 40, color: 'orange', fontWeight: 'bold' }}>{params && params.name || "..."}</Text>
           <TouchableHighlight
-            style={styles.button}
-            onPress={this._disconnect.bind(this, params && params.info.deviceID)}
+            style={[styles.button]}
+            onPress={this._disconnect.bind(this, this.state.params.id)}
             underlayColor='ivory'>
-            <Text>Disconnect</Text>
+            <Text style={{color: 'white'}}>{this.state.btnLabel}</Text>
           </TouchableHighlight>
         </View>
         <View style={{ flexDirection: 'row' }}>
@@ -190,9 +269,9 @@ const styles = StyleSheet.create({
     margin: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 100,
+    width: 120,
     height: 45,
     borderWidth: 1,
-    borderColor: '#FFFF00'
+    borderColor: '#FFFF00'  
   },
 })

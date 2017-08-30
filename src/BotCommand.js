@@ -22,7 +22,6 @@ export default class BotCommnad {
     static encode(data) {
         let buf = new Buffer(1);
         buf.writeUInt8(data);
-        console.log(buf, data)
         return buf.toString('base64')
     }
     static move_forward(speed) {
@@ -71,9 +70,9 @@ export default class BotCommnad {
         } else if (str == 'R') {
             return BotCommnad.skill(3)
         } else if (str == 'ON') {
-            return BotCommnad.revert(1)
-        } else if (str == 'OFF') {
             return BotCommnad.revert(0)
+        } else if (str == 'OFF') {
+            return BotCommnad.revert(1)
         } else if (str == 'RELOAD') {
             return BotCommnad.auto_on_disconnect(0)
         }

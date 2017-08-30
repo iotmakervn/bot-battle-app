@@ -17,9 +17,9 @@ export default class Skills extends React.Component {
 		return (
 			<View style={{ flexDirection: 'column', marginTop: 20, marginLeft: 30 }}>
 				<View style={{ flexDirection: 'row' }}>
-					<JoyStickBtn style={{ marginLeft: 30 }} text="ON" revert="OFF" type="rect" onPress={this.props.onPress} />
+					<JoyStickBtn style={{ marginLeft: 30 }} text="OFF" revert="ON" type="rect" onPress={this.props.onPress} />
 					<JoyStickBtn style={{ marginLeft: 20 }} text="RELOAD" type="rect" onPress={this.props.onPress}>
-						<Image source={Reverse} style={{ width: 100, height: 100, marginTop: 4 }} />
+						<Image source={Reverse} style={{ width: 40, height: 40, marginTop: 4 }} />
 					</JoyStickBtn>
 				</View>
 				<View style={{ flexDirection: 'row' }}>

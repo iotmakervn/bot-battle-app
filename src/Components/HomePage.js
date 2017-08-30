@@ -63,12 +63,13 @@ export default class HomePage extends React.Component {
     if (this.state.pressed) {
       this.setState({ pressed: false })
     }
+    this.manager.stopDeviceScan();
     this.manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         return
       }
       let found = false;
-      if (!devices.find(o => o.id == device.id) && device.name) {
+      if (!devices.find(o => o.id == device.id) && device.name && device.name == 'BOT-GAREN') {
         devices.unshift({
           name: device.name,
           id: device.id,
@@ -82,33 +83,9 @@ export default class HomePage extends React.Component {
   }
 
   _connect(deviceID, deviceName) {
-    var info = []
-    var characteristicForWrite = []
-    this.manager.stopDeviceScan()
     console.log(deviceID, deviceName)
-    this.manager.connectToDevice(deviceID)
-      .then((device) => {
-        console.log(device)
-        return device.discoverAllServicesAndCharacteristics()
-      })
-      .then((device) => {
-        device.services()
-          .then((services) => {
-            console.log(services)
-            let service_idx = 2;
-            if (Platform.OS == 'ios')
-              service_idx = 0;
-            return device.characteristicsForService(services[service_idx].uuid)
-          })
-          .then((characteristics) => {
-            console.log(characteristics)
-            for (var i in characteristics) {
-              if (characteristics[i].isWritableWithResponse === true)
-                characteristicForWrite = characteristics[i]
-            }
-            return this.props.navigation.navigate('ControlPage', { info: characteristicForWrite, name: deviceName })
-          })
-      })
+
+    this.props.navigation.navigate('ControlPage', { name: deviceName, id: deviceID })
     this.setState({ pressed: true })
   }
 
