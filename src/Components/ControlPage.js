@@ -192,7 +192,7 @@ export default class ControlPage extends React.Component {
   onJoystickBtnClick(text) {
     console.log(text);
 
-    this.write(BotCommnad.skill_from_str(text))
+    this.write(BotCommnad.skill_from_str(text), true)
     /* Write here */
     // console.log(BotCommnad.move_forward(10))
   }
