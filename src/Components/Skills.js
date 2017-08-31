@@ -23,12 +23,12 @@ export default class Skills extends React.Component {
 					</JoyStickBtn>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
-					<JoyStickBtn style={{ marginLeft: 180, marginTop: 48, marginRight: 20 }} text="W" onPress={this.props.onPress} />
-					<JoyStickBtn style={{ marginTop: 10 }} text="E" onPress={this.props.onPress} />
+					<JoyStickBtn style={{ marginLeft: 180, marginTop: 48, marginRight: 20 }} text="⬆️" onPress={this.props.onPress} />
+					<JoyStickBtn style={{ marginTop: 10 }} text="⬇️" onPress={this.props.onPress} />
 				</View>
 				<View style={{ flexDirection: 'row' }}>
 					<JoyStickBtn style={{ marginLeft: 135, marginRight: 60, marginTop: 12 }} text="Q" onPress={this.props.onPress} />
-					<JoyStickBtn style={{ marginTop: 12 }} text="R" onPress={this.props.onPress} />
+					<JoyStickBtn style={{ marginTop: 12 }} text="🔄" onPress={this.props.onPress} />
 				</View>
 			</View>
 		)

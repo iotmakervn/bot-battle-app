@@ -63,11 +63,11 @@ export default class BotCommnad {
     static skill_from_str(str) {
         if (str == 'Q') {
             return BotCommnad.skill(0)
-        } else if (str == 'W') {
+        } else if (str == '⬆️') {
             return BotCommnad.skill(1)
-        } else if (str == 'E') {
+        } else if (str == '⬇️') {
             return BotCommnad.skill(2)
-        } else if (str == 'R') {
+        } else if (str == '🔄') {
             return BotCommnad.skill(3)
         } else if (str == 'ON') {
             return BotCommnad.revert(0)
