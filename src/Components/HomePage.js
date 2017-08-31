@@ -69,7 +69,7 @@ export default class HomePage extends React.Component {
         return
       }
       let found = false;
-      if (!devices.find(o => o.id == device.id) && device.name) {
+      if (!devices.find(o => o.id == device.id) && device.name && device.name == 'BOT-GAREN') {
         devices.unshift({
           name: device.name,
           id: device.id,
